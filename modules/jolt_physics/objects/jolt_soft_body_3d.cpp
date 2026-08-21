@@ -351,7 +351,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 
 			const float spring_stiffness = CLAMP(weight, 0.0001f, 1.0f);
 			const float eff_spring_stiffness = normalize_stiffness(spring_stiffness, simulation_precision);
-			const float spring_compliance = dt * dt * (1.0f / eff_spring_stiffness - 1.0f) * w1_plus_w2;
+			const float spring_compliance = dt * dt * (1.0f / eff_spring_stiffness - 1.0f) * (0.5f * w1_plus_w2);
 
 			JPH::SoftBodySharedSettings::Edge anchor_edge((JPH::uint32)mesh_physics_index, (JPH::uint32)anchor_physics_index, spring_compliance);
 			anchor_edge.mRestLength = 0.0f;
@@ -544,6 +544,7 @@ void JoltSoftBody3D::_damping_changed() {
 }
 
 void JoltSoftBody3D::_pins_changed() {
+	// _try_rebuild();
 	_update_mass();
 	wake_up();
 }
@@ -1083,17 +1084,31 @@ void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position)
 	const JPH::RVec3 center_of_mass = jolt_body->GetCenterOfMassPosition();
 	const JPH::Vec3 target_rel_pos = JPH::Vec3(to_jolt_r(p_position) - center_of_mass);
 
+	float step = space ? space->get_last_step() : 0.0f;
+	if (step <= CMP_EPSILON) {
+		step = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second();
+	}
+
 	const HashMap<int, int>::ConstIterator anchor_it = mesh_to_anchor.find(p_index);
 	if (anchor_it) {
 		const int anchor_index = anchor_it->value;
 		if (anchor_index >= 0 && anchor_index < (int)physics_vertices.size()) {
-			physics_vertices[anchor_index].mPosition = target_rel_pos;
-			physics_vertices[anchor_index].mVelocity = JPH::Vec3::sZero();
+			JPH::SoftBodyVertex &anchor_vertex = physics_vertices[anchor_index];
+			if (step > CMP_EPSILON) {
+				anchor_vertex.mVelocity = (target_rel_pos - anchor_vertex.mPosition) / step;
+			} else {
+				anchor_vertex.mVelocity = JPH::Vec3::sZero();
+				anchor_vertex.mPosition = target_rel_pos;
+			}
 		}
 	} else {
 		JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
-		physics_vertex.mPosition = target_rel_pos;
-		physics_vertex.mVelocity = JPH::Vec3::sZero();
+		if (step > CMP_EPSILON) {
+			physics_vertex.mVelocity = (target_rel_pos - physics_vertex.mPosition) / step;
+		} else {
+			physics_vertex.mVelocity = JPH::Vec3::sZero();
+			physics_vertex.mPosition = target_rel_pos;
+		}
 	}
 
 	_vertices_changed();

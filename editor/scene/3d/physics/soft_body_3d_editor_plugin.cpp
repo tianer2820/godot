@@ -208,13 +208,21 @@ void SoftBody3DEditor::_apply_pin_weights_from_vertex_colors() {
 	ur->create_action(TTR("Set SoftBody3D Pin Weights from Vertex Colors"));
 
 	ur->add_do_property(node, "pinned_points", new_indices);
-	for (const Variant *E = new_props.next(nullptr); E; E = new_props.next(E)) {
-		ur->add_do_property(node, *E, new_props[*E]);
+	for (int i = 0; i < new_indices.size(); i++) {
+		String prefix = vformat("attachments/%d/", i);
+		ur->add_do_property(node, prefix + "point_index", new_props[prefix + "point_index"]);
+		ur->add_do_property(node, prefix + "spatial_attachment_path", new_props[prefix + "spatial_attachment_path"]);
+		ur->add_do_property(node, prefix + "offset", new_props[prefix + "offset"]);
+		ur->add_do_property(node, prefix + "weight", new_props[prefix + "weight"]);
 	}
 
 	ur->add_undo_property(node, "pinned_points", prev_indices);
-	for (const Variant *E = prev_props.next(nullptr); E; E = prev_props.next(E)) {
-		ur->add_undo_property(node, *E, prev_props[*E]);
+	for (int i = 0; i < prev_indices.size(); i++) {
+		String prefix = vformat("attachments/%d/", i);
+		ur->add_undo_property(node, prefix + "point_index", prev_props[prefix + "point_index"]);
+		ur->add_undo_property(node, prefix + "spatial_attachment_path", prev_props[prefix + "spatial_attachment_path"]);
+		ur->add_undo_property(node, prefix + "offset", prev_props[prefix + "offset"]);
+		ur->add_undo_property(node, prefix + "weight", prev_props[prefix + "weight"]);
 	}
 
 	ur->add_do_method(node, "notify_property_list_changed");
@@ -246,8 +254,12 @@ void SoftBody3DEditor::_clear_all_pinned_points() {
 
 	ur->add_do_property(node, "pinned_points", Array());
 	ur->add_undo_property(node, "pinned_points", prev_indices);
-	for (const Variant *E = prev_props.next(nullptr); E; E = prev_props.next(E)) {
-		ur->add_undo_property(node, *E, prev_props[*E]);
+	for (int i = 0; i < prev_indices.size(); i++) {
+		String prefix = vformat("attachments/%d/", i);
+		ur->add_undo_property(node, prefix + "point_index", prev_props[prefix + "point_index"]);
+		ur->add_undo_property(node, prefix + "spatial_attachment_path", prev_props[prefix + "spatial_attachment_path"]);
+		ur->add_undo_property(node, prefix + "offset", prev_props[prefix + "offset"]);
+		ur->add_undo_property(node, prefix + "weight", prev_props[prefix + "weight"]);
 	}
 
 	ur->add_do_method(node, "notify_property_list_changed");

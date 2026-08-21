@@ -256,15 +256,14 @@ bool SoftBody3D::_set_property_pinned_points_attachment(int p_item, const String
 		return false;
 	}
 
-	if ("spatial_attachment_path" == p_what) {
+	if ("point_index" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
-
-		if (is_inside_tree()) {
-			callable_mp(this, &SoftBody3D::_pin_point_deferred).call_deferred(Variant(w[p_item].point_index), true, p_value);
-		} else {
-			pin_point(w[p_item].point_index, true, p_value, -1, w[p_item].weight);
-			_make_cache_dirty();
-		}
+		w[p_item].point_index = p_value;
+	} else if ("spatial_attachment_path" == p_what) {
+		PinnedPoint *w = pinned_points.ptrw();
+		w[p_item].spatial_attachment_path = p_value;
+		w[p_item].spatial_attachment = nullptr;
+		_make_cache_dirty();
 	} else if ("offset" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
 		w[p_item].offset = p_value;
@@ -943,7 +942,12 @@ real_t SoftBody3D::get_point_weight(int p_point_index) const {
 }
 
 void SoftBody3D::_pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path) {
-	pin_point(p_point_index, pin, p_spatial_attachment_path);
+	PinnedPoint *pp = nullptr;
+	real_t w = 1.0;
+	if (_get_pinned_point(p_point_index, pp) != -1 && pp) {
+		w = pp->weight;
+	}
+	pin_point(p_point_index, pin, p_spatial_attachment_path, -1, w);
 	_make_cache_dirty();
 }
 

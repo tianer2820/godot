@@ -618,9 +618,9 @@ void GodotSoftBody3D::pin_vertex(int p_index) {
 
 		if (weight >= 0.999) {
 			node.im = 0.0;
-		} else if (weight > 0.0) {
+		} else {
 			real_t inv_node_mass = nodes.size() * inv_total_mass;
-			node.im = (1.0 - weight) * inv_node_mass;
+			node.im = inv_node_mass;
 		}
 	}
 }
@@ -693,11 +693,26 @@ void GodotSoftBody3D::set_vertex_weight(int p_index, real_t p_weight) {
 		Node &node = nodes[node_index];
 
 		real_t weight = pinned_weights[p_index];
+		real_t inv_node_mass = nodes.size() * inv_total_mass;
 		if (weight >= 0.999) {
 			node.im = 0.0;
 		} else {
-			real_t inv_node_mass = nodes.size() * inv_total_mass;
-			node.im = (1.0 - weight) * inv_node_mass;
+			node.im = inv_node_mass;
+		}
+
+		const HashMap<int, int>::ConstIterator anchor_it = mesh_to_anchor.find(p_index);
+		if (anchor_it) {
+			uint32_t anchor_idx = anchor_it->value;
+			if (anchor_idx < nodes.size()) {
+				int n = MAX(1, iteration_count);
+				real_t eff_weight = normalize_stiffness(CLAMP(weight, (real_t)0.0001, (real_t)1.0), n);
+				for (Link &link : links) {
+					if (link.type == Link::TYPE_ANCHOR && ((link.n[0] == &node && link.n[1] == &nodes[anchor_idx]) || (link.n[1] == &node && link.n[0] == &nodes[anchor_idx]))) {
+						link.c0 = node.im / eff_weight;
+						break;
+					}
+				}
+			}
 		}
 	}
 }
