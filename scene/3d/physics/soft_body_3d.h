@@ -240,6 +240,9 @@ private:
 	void _update_cache_pin_points_datas();
 	void _update_pinned_skin_cache();
 
+	void _get_skeleton_and_skin_transforms(class Skeleton3D *&r_skeleton, Ref<class Skin> &r_active_skin, Transform3D &r_skeleton_global_transform, LocalVector<Transform3D> &r_skin_transforms);
+	bool _calculate_pinned_point_global_position(const PinnedPoint &p_pinned_point, const class Skeleton3D *p_skeleton, const Ref<class Skin> &p_active_skin, const Transform3D &p_skeleton_global_transform, const LocalVector<Transform3D> &p_skin_transforms, Vector3 &r_global_pos) const;
+
 	void _pin_point_on_physics_server(int p_point_index, bool pin);
 	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at = -1, real_t p_weight = 1.0);
 	void _reset_points_offsets();
