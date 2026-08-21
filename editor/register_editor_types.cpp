@@ -105,6 +105,7 @@
 #include "editor/scene/3d/particles_3d_editor_plugin.h"
 #include "editor/scene/3d/path_3d_editor_plugin.h"
 #include "editor/scene/3d/physics/physical_bone_3d_editor_plugin.h"
+#include "editor/scene/3d/physics/soft_body_3d_editor_plugin.h"
 #include "editor/scene/3d/polygon_3d_editor_plugin.h"
 #include "editor/scene/3d/skeleton_3d_editor_plugin.h"
 #include "editor/scene/3d/voxel_gi_editor_plugin.h"
@@ -257,6 +258,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<ShaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderFileEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton3DEditorPlugin>();
+	EditorPlugins::add_by_type<SoftBody3DEditorPlugin>();
 	EditorPlugins::add_by_type<SpriteFramesEditorPlugin>();
 	EditorPlugins::add_by_type<StyleBoxEditorPlugin>();
 	EditorPlugins::add_by_type<SubViewportPreviewEditorPlugin>();
