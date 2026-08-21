@@ -1079,7 +1079,6 @@ void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position)
 
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
-	JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
 	const JPH::RVec3 center_of_mass = jolt_body->GetCenterOfMassPosition();
 	const JPH::Vec3 target_rel_pos = JPH::Vec3(to_jolt_r(p_position) - center_of_mass);
